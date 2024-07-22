@@ -1,6 +1,6 @@
 // const errorHandler = (err,req,res) => {
 //     console.error(err.stack);
-//     res.status(500).send({ "error": err.message, 'message' : "Ocurrio un error en el servidor" });
+//     res.status(500).json({ "error": err.message, 'message' : "Ocurrio un error en el servidor" });
 // }
 
 // export default errorHandler //exportar una sola cosa una sola funcion un solo archivo, variable

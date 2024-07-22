@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Pucca",
+    "genre": "Comedia"
+  },
+  {
+    "id": 2,
+    "title": "Pucca",
+    "genre": "Comedia"
+  },
+  {
+    "id": 3,
+    "title": "Pucca",
+    "genre": "Comedia"
+  }
+]

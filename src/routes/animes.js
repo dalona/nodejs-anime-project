@@ -1,86 +1,90 @@
-// import { Router } from "express";
-// import { promises as fs } from "fs";
-// import { fileURLToPath } from "url";
-// import path from "path";
-
-
-// const routerAnime = Router();
-// // const animeFilePath = path.join(__dirname, "../../data/animes.json");
-
-// const _filename = fileURLToPath(import.meta.url); //archivo en un ruta absoluta convierte la ruta en una  ruta absoluta para que js la pueda enteder
-// const _dirname = path.dirname(_filename);
-
-// const animesFilePath = path.join(_dirname, "../../data/animes.json"); //Pasos adicionales para utilizar el fs
-
-// const readAnimesFile = async () => {
-//     const data = await fs.readFile(animesFilePath, "utf-8");
-//     return JSON.parse(data);
-// };
-
-// const writeAnimeFs = async (animes) => {
-//     fs.writeFile(animesFilePath, JSON.stringify(animes, null, 2));
-// }
-
-// Router.post("/postAnimes",(req,res) =>{
-
-// });
-
-// routerAnime.post("/postAnimes", async (req, res) => {
-//     const animes = await readAnimesFile();
-//     const newAnime = { id:animes.length + 1,
-//         title : req.body.title,
-//         genre: req.body.genre,}; 
-//     animes.push(newAnime);
-//     await writeAnimeFs(animes);
-//     res.status(201).json(newAnime);
-// });
-
-// export default routerAnime;
-
 import { Router } from "express";
-import { promises as fs } from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
+import { promises as fs } from 'fs';
+import { fileURLToPath  } from "url";
+import path from 'path';
 
 const routerAnime = Router();
 const _filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
+const _dirname = path.dirname(_filename)
+
+
 const animesFilePath = path.join(_dirname, "../../data/animes.json");
 
-const readAnimesFile = async () => {
-    try {
-        const data = await fs.readFile(animesFilePath, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading animes file:', error);
-        return [];
+const readAnimesFs = async () => {
+    try{
+        const animes = await fs.readFile(animesFilePath)
+        return JSON.parse(animes);
+    }catch(err){
+        throw new Error(`Error en la promesa ${err}`)
     }
 };
 
-const writeAnimeFs = async (animes) => {
-    try {
-        await fs.writeFile(animesFilePath, JSON.stringify(animes, null, 2));
-    } catch (error) {
-        console.error('Error writing animes file:', error);
-        throw error;
-    }
+const writeAnimesFs = async (animes) => {
+    await fs.writeFile(animesFilePath, JSON.stringify(animes, null, 2));
 };
 
-routerAnime.post("/postAnimes", async (req, res) => {
-    try {
-        const animes = await readAnimesFile();
-        const newAnime = {
-            id: animes.length + 1,
-            title: req.body.title,
-            genre: req.body.genre,
-        };
-        animes.push(newAnime);
-        await writeAnimeFs(animes);
-        res.status(201).json(newAnime);
-    } catch (error) {
-        console.error('Error handling postAnimes:', error);
-        res.status(500).send('Internal Server Error');
-    }
+routerAnime.post("/createAnimes", async (req, res) => {
+    const animes = await readAnimesFs();
+    const newAnime = {
+        id: animes.length + 1,
+        title: req.body.title,
+        genre: req.body.genre
+    };
+
+    animes.push(newAnime);
+    await writeAnimesFs(animes);
+    res.status(201).send(`Anime created successfully ${JSON.stringify(newAnime)}`);
 });
 
+routerAnime.get("/", async (req, res) => {
+    const animes = await readAnimesFs()
+    res.json(animes);
+});
+
+routerAnime.get("/:animeId", async (req, res) => {
+    const animes = await readAnimesFs();
+    const anime = animes.find(a => a.id === parseInt(req.params.animeId));
+    if(!anime) return res.status(404).send("Anime not found");
+    res.json(anime)
+});
+
+routerAnime.put("/:id", async (req, res) => {
+    const animes = await readAnimesFs();
+    const indexAnime = animes.findIndex(a => a.id === parseInt(req.params.id));
+    if(indexAnime === -1) return res.status(404).send("Anime not found");
+    const updateAnime = {
+        ...animes[indexAnime],
+        title: req.body.title,
+        genre: req.body.genre
+    }
+
+    animes[indexAnime] = updateAnime;
+    await writeAnimesFs(animes);
+    res.send(`Anime update successfully ${JSON.stringify(updateAnime)}`)
+});
+
+routerAnime.delete("/delete/:id", async (req, res) => {
+    let animes = await readAnimesFs();
+    const anime = animes.find(a => a.id === parseInt(req.params.id));
+    if(!anime) return res.status(404).send("Anime not found");
+    animes = animes.filter(a => a.id !== anime.id);
+
+    await writeAnimesFs(animes);
+    res.send("Anime deleted successfully");
+
+});
+
+// routerAnime.delete('/:id', async (req,res)=>{
+//     const animes = await readAnimesFs();
+//     const animeIndex = animes.findIndex(anime => anime.id === parseInt(req.params.id))
+//     if(animes === -1) return res.status(404).send('Anime not found')
+//         const deleteAnime = animes.splice(animeIndex,1)
+//         await writeAnimesFs(deleteAnime)
+//         res.send('The anime has been deleted')
+
+
+// })
+
 export default routerAnime;
+
+
