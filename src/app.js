@@ -1,8 +1,9 @@
 import express  from "express";
 import dotenv from 'dotenv';
 import errorHandler from "./middleware/errorHandler.js";
-// import routerStudios from "./routes/studios.js";
+import routerStudios from "./routes/studios.js";
 import routerAnime from "./routes/animes.js";
+import cors from 'cors';
 
 //const express = require('express')
 
@@ -14,8 +15,9 @@ const PORT = process.env.PORT || 3000;  //lA CONSTANTE POR VA A A BUSCAR EN PROC
 
 app.use(express.json());
 app.use('/animes',routerAnime);
-// app.use('/studios', routerStudios);
+app.use('/studios', routerStudios);
 app.use(errorHandler);
+app.use(cors());
 
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
